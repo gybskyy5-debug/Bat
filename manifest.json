@@ -1,13 +1,13 @@
 {
-  "name": "Калькулятор температури",
-  "short_name": "Температура",
-  "description": "Розрахунок температури на висоті за градієнтом",
+  "name": "Розрахунок часу польоту",
+  "short_name": "Батарея",
+  "description": "Калькулятор часу польоту за батареєю та витратами",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#101827",
-  "theme_color": "#101827",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
   "lang": "uk",
   "icons": [
     { "src": "icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },

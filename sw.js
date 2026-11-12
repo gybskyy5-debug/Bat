@@ -1,4 +1,4 @@
-const CACHE = 'tempcalc-v1';
+const CACHE = 'batterycalc-v1';
 
 const ASSETS = [
   './',

@@ -1,28 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#101827"/>
-  <defs>
-    <linearGradient id="mercury" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#f87171"/>
-      <stop offset="50%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#38bdf8"/>
-    </linearGradient>
-  </defs>
-  <rect x="200" y="88" width="112" height="300" rx="56"
-        fill="none" stroke="#475569" stroke-width="14"/>
-  <circle cx="256" cy="388" r="72"
-          fill="none" stroke="#475569" stroke-width="14"/>
-  <rect x="218" y="180" width="76" height="208" rx="38" fill="url(#mercury)"/>
-  <circle cx="256" cy="388" r="56" fill="#f87171"/>
-  <g stroke="#5f7089" stroke-width="6" stroke-linecap="round">
-    <line x1="138" y1="130" x2="172" y2="130"/>
-    <line x1="138" y1="180" x2="172" y2="180"/>
-    <line x1="138" y1="230" x2="172" y2="230"/>
-    <line x1="138" y1="280" x2="172" y2="280"/>
-    <line x1="138" y1="330" x2="172" y2="330"/>
-    <line x1="340" y1="130" x2="374" y2="130"/>
-    <line x1="340" y1="180" x2="374" y2="180"/>
-    <line x1="340" y1="230" x2="374" y2="230"/>
-    <line x1="340" y1="280" x2="374" y2="280"/>
-    <line x1="340" y1="330" x2="374" y2="330"/>
+  <rect width="512" height="512" rx="112" fill="#0b1220"/>
+  <g transform="translate(256 256)">
+    <rect x="-130" y="-70" width="260" height="140" rx="20"
+          fill="none" stroke="#475569" stroke-width="16"/>
+    <rect x="130" y="-30" width="30" height="60" rx="8" fill="#475569"/>
+    <rect x="-110" y="-50" width="180" height="100" rx="10" fill="#34d399"/>
+    <rect x="70" y="-50" width="30" height="100" rx="6" fill="rgba(52,211,153,.25)"/>
+    <path d="M -30,-60 L 10,0 L -10,10 L 30,70"
+          fill="none" stroke="#0b1220" stroke-width="14"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="-130" cy="-50" r="6" fill="#475569"/>
+    <circle cx="-130" cy="50" r="6" fill="#475569"/>
   </g>
 </svg>

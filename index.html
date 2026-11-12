@@ -3,427 +3,833 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#101827">
+<meta name="theme-color" content="#0b1220">
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Температура">
-<title>Калькулятор температури</title>
+<meta name="apple-mobile-web-app-title" content="Батарея">
+<title>Розрахунок часу польоту</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
+  :root{
+    --bg:#0b1220; --card:#141d2e; --card2:#1b2740; --line:#26334d;
+    --txt:#e8eefc; --muted:#8b9bb4; --accent:#38bdf8; --green:#34d399;
+    --amber:#fbbf24; --red:#f87171;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #16233c 0%, var(--bg) 60%);
+    color:var(--txt);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    min-height:100vh;
     padding:
-        calc(20px + env(safe-area-inset-top, 0px))
-        20px
-        calc(20px + env(safe-area-inset-bottom, 0px));
-    background: #101827;
-    color: white;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: transparent;
-}
+      calc(16px + env(safe-area-inset-top, 0px))
+      16px
+      calc(16px + env(safe-area-inset-bottom, 0px));
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header{margin:4px 0 18px;text-align:center}
+  header h1{font-size:20px;font-weight:650;margin:0 0 4px;letter-spacing:.2px}
+  header p{margin:0;color:var(--muted);font-size:13px}
 
-.container {
-    max-width: 450px;
-    margin: 20px auto;
-    background: #1e293b;
-    padding: 24px;
-    border-radius: 18px;
-}
+  .panel{
+    background:linear-gradient(180deg,var(--card) 0%, #111a29 100%);
+    border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;
+  }
 
-h2 { text-align: center; margin-top: 0; }
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .field label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;line-height:1.25}
+  .field label .range{color:#5f7089;font-weight:500;font-size:11px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-.subtitle {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 13px;
-    margin-bottom: 25px;
-}
+  .seg{
+    display:flex;gap:3px;background:var(--card2);border:1px solid var(--line);
+    border-radius:9px;padding:3px;
+  }
+  .seg button{
+    flex:1;appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:13px;font-weight:700;
+    padding:8px 6px;border-radius:7px;cursor:pointer;white-space:nowrap;
+    touch-action:manipulation;transition:background .15s,color .15s;
+  }
+  .seg button.on{background:rgba(52,211,153,.2);color:#a7f3d0}
+  .seg button:active{transform:translateY(1px)}
+  .seg.blue button.on{background:rgba(56,189,248,.2);color:#bfe9ff}
 
-label {
-    display: block;
-    margin-top: 18px;
-    margin-bottom: 8px;
-    color: #cbd5e1;
-    font-size: 14px;
-}
+  .presets{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;
+  }
+  .presets button{
+    padding:10px 6px;background:var(--card2);border:1px solid var(--line);
+    border-radius:9px;color:var(--txt);font:inherit;font-size:11px;font-weight:600;
+    cursor:pointer;touch-action:manipulation;text-align:center;line-height:1.25;
+    transition:border-color .15s, background .15s;
+  }
+  .presets button:hover{border-color:var(--accent);background:rgba(56,189,248,.08)}
+  .presets button:active{transform:translateY(1px)}
+  .presets button small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:2px}
 
-label .range {
-    color: #64748b;
-    font-weight: 500;
-    font-size: 12px;
-}
+  input[type=text]{
+    width:100%;background:var(--card2);border:1px solid var(--line);
+    border-radius:11px;color:var(--txt);font-size:22px;font-weight:650;
+    padding:11px 12px;font-variant-numeric:tabular-nums;outline:none;
+    touch-action:manipulation;-webkit-appearance:none;appearance:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
 
-.input-group {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-}
+  .stepper{display:flex;gap:4px;align-items:stretch}
+  .stepper button{
+    flex-shrink:0;width:40px;min-height:44px;
+    background:var(--card2);border:1px solid var(--line);border-radius:11px;
+    color:var(--txt);font:inherit;font-size:20px;font-weight:700;line-height:1;
+    cursor:pointer;touch-action:manipulation;
+    user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    transition:background .12s, border-color .12s;
+  }
+  .stepper button:hover{background:rgba(56,189,248,.10);border-color:var(--accent)}
+  .stepper button:active{background:rgba(56,189,248,.22);border-color:var(--accent)}
+  .stepper input{flex:1;min-width:0;text-align:center;padding-left:6px;padding-right:6px}
 
-input {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    background: #0f172a;
-    color: white;
-    font-size: 20px;
-    outline: none;
-    font-variant-numeric: tabular-nums;
-    touch-action: manipulation;
-    -webkit-appearance: none;
-    appearance: none;
-    transition: border-color .15s, box-shadow .15s;
-}
+  .input-unit{position:relative;display:flex;min-width:0}
+  .input-unit input{padding-right:64px}
+  .input-unit .unit{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    font-size:14px;color:var(--muted);font-weight:600;pointer-events:none;
+  }
 
-.input-group.has-sign input { padding-right: 56px; }
+  .value-equiv{
+    font-size:11.5px;color:var(--muted);margin-top:5px;
+    font-variant-numeric:tabular-nums;font-weight:600;
+  }
 
-input:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 3px rgba(56,189,248,.15);
-}
+  .total-cap{
+    margin-top:8px;font-size:12.5px;color:var(--muted);font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .total-cap b{color:var(--green);font-weight:750}
 
-.sign-btn {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: #e2e8f0;
-    font: inherit;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
-    -webkit-user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: background .12s, border-color .12s;
-}
+  .slider-wrap{margin-top:14px}
+  .slider-wrap label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;color:var(--txt);font-weight:600;margin-bottom:8px;
+  }
+  .slider-wrap label b{color:var(--green);font-size:16px;font-weight:750}
+  .slider-hint{color:var(--muted);font-size:11.5px;margin-top:6px;font-variant-numeric:tabular-nums}
 
-.sign-btn:hover { background: #334155; border-color: #38bdf8; }
-.sign-btn:active { background: #334155; transform: translateY(-50%) scale(0.95); }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;
+    background:var(--card2);border-radius:3px;outline:none;padding:0;margin:8px 0;
+    border:1px solid var(--line);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:24px;height:24px;
+    background:var(--green);border-radius:50%;cursor:pointer;
+    border:2px solid var(--bg);box-shadow:0 0 0 3px rgba(52,211,153,.2);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:24px;height:24px;background:var(--green);border-radius:50%;cursor:pointer;
+    border:2px solid var(--bg);box-shadow:0 0 0 3px rgba(52,211,153,.2);
+  }
 
-.hint {
-    color: #94a3b8;
-    font-size: 12px;
-    margin-top: 5px;
-}
+  .result-main{
+    background:linear-gradient(180deg,#12261e,#0d1a14);
+    border:1px solid rgba(52,211,153,.35);
+    border-radius:16px;padding:18px 16px;margin-bottom:12px;text-align:center;
+  }
+  .result-main .k{
+    font-size:11px;letter-spacing:.7px;text-transform:uppercase;
+    color:#6ee7b7;font-weight:700;margin-bottom:6px;
+  }
+  .result-main .v{
+    font-size:52px;font-weight:800;line-height:1;
+    color:var(--green);font-variant-numeric:tabular-nums;letter-spacing:-1px;
+  }
+  .result-main .sub{
+    font-size:13px;color:#6ee7b7;margin-top:6px;font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
 
-.result {
-    margin-top: 25px;
-    padding: 20px;
-    background: #0f172a;
-    border-radius: 12px;
-    text-align: center;
-}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .info-box{
+    background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:11px 13px;
+  }
+  .info-box .k{
+    font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:5px;
+  }
+  .info-box .v{
+    font-size:20px;font-weight:750;color:var(--txt);
+    font-variant-numeric:tabular-nums;
+  }
+  .info-box .v small{font-size:12px;color:var(--muted);font-weight:600;margin-left:2px}
 
-.result-title {
-    color: #94a3b8;
-    font-size: 13px;
-}
+  .crate-ok{color:var(--green)}
+  .crate-normal{color:var(--accent)}
+  .crate-high{color:var(--amber)}
+  .crate-danger{color:var(--red)}
 
-.temperature {
-    font-size: 38px;
-    font-weight: bold;
-    color: #38bdf8;
-    margin: 12px 0;
-    font-variant-numeric: tabular-nums;
-}
+  .voltage-block{
+    background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-bottom:12px;
+  }
+  .voltage-block .title{
+    font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:8px;
+  }
+  .v-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;line-height:1.6;gap:8px;
+  }
+  .v-row .vk{color:var(--muted);font-weight:600}
+  .v-row .vv{color:var(--txt);font-weight:650;font-variant-numeric:tabular-nums;text-align:right}
+  .v-row .vcell{color:var(--muted);font-weight:500;font-size:11.5px;margin-left:4px}
 
-.details {
-    margin-top: 18px;
-    color: #cbd5e1;
-    font-size: 14px;
-    line-height: 1.8;
-}
+  .max-ref{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:10px 12px;margin-top:10px;
+    background:rgba(248,113,113,.08);
+    border:1px dashed rgba(248,113,113,.35);
+    border-radius:10px;font-size:12.5px;
+    color:#fecaca;font-weight:600;
+  }
+  .max-ref b{font-variant-numeric:tabular-nums;font-weight:700}
 
-.details b { font-variant-numeric: tabular-nums; }
+  .warn{
+    display:none;margin-top:12px;border-radius:11px;padding:11px 13px;
+    font-size:13px;font-weight:600;line-height:1.5;
+    background:rgba(248,113,113,.1);
+    border:1px solid rgba(248,113,113,.4);
+    color:#fecaca;
+  }
+  .warn.show{display:block}
+  .warn.amber{
+    background:rgba(251,191,36,.1);
+    border-color:rgba(251,191,36,.4);
+    color:#fde68a;
+  }
+  .warn-item + .warn-item{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)}
 
-button.reset {
-    width: 100%;
-    margin-top: 20px;
-    padding: 15px;
-    border: none;
-    border-radius: 10px;
-    background: #334155;
-    color: white;
-    font: inherit;
-    font-size: 16px;
-    cursor: pointer;
-    touch-action: manipulation;
-}
+  .reset-row{display:flex;justify-content:center;margin-top:12px}
+  .reset-btn{
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    font:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:9px;
+    cursor:pointer;touch-action:manipulation;
+    transition:color .15s,border-color .15s;
+  }
+  .reset-btn:hover{color:var(--txt);border-color:var(--accent)}
+  .reset-btn:active{transform:translateY(1px)}
 
-button.reset:active { transform: translateY(1px); }
+  footer{
+    text-align:center;color:var(--muted);font-size:11.5px;
+    line-height:1.6;margin-top:6px;padding:0 10px;
+  }
+  footer b{color:var(--txt);font-weight:600}
 
-.formula {
-    margin-top: 22px;
-    padding: 15px;
-    background: #263449;
-    border-radius: 10px;
-    font-size: 13px;
-    color: #cbd5e1;
-    line-height: 1.7;
-}
-
-.error {
-    color: #f87171;
-    font-size: 13px;
-    margin-top: 10px;
-    min-height: 18px;
-}
-
-.warn {
-    display: none;
-    margin-top: 12px;
-    background: rgba(251,191,36,.1);
-    border: 1px solid rgba(251,191,36,.4);
-    color: #fde68a;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 12.5px;
-    line-height: 1.4;
-}
-
-.warn.show { display: block; }
+  @media (max-width:420px){
+    .result-main .v{font-size:44px}
+    .info-box .v{font-size:18px}
+    input[type=text]{font-size:20px;padding:10px}
+    .input-unit input{padding-right:58px}
+    .stepper button{width:38px;min-height:42px;font-size:18px}
+    .presets button{font-size:10px;padding:8px 4px}
+  }
 </style>
 </head>
-
 <body>
+<div class="wrap">
 
-<div class="container">
+  <header>
+    <h1>🔋 Час польоту</h1>
+    <p>Від мікродронів до далекольотів</p>
+  </header>
 
-<h2>🌡️ Калькулятор температури</h2>
+  <section class="panel">
+    <div class="seg" id="chemSeg" role="group" aria-label="Тип батареї">
+      <button type="button" data-c="lipo" class="on">LiPo</button>
+      <button type="button" data-c="lihv">LiHV</button>
+      <button type="button" data-c="liion">Li-ion</button>
+    </div>
 
-<div class="subtitle">
-Розрахунок температури залежно від висоти
-</div>
+    <div class="presets" id="presets">
+      <button type="button" data-preset="micro">Мікродрон<small>1S · 300 мА·год</small></button>
+      <button type="button" data-preset="fpv">FPV<small>6S · 1300 мА·год</small></button>
+      <button type="button" data-preset="long">Далеколіт<small>20S5P · 25 А·год</small></button>
+    </div>
 
-<label for="temp">Температура біля землі (°C)</label>
-<div class="input-group has-sign">
-    <input id="temp" type="text" inputmode="decimal" enterkeyhint="done"
-           value="20" placeholder="Наприклад: -5 або 20">
-    <button type="button" class="sign-btn" data-target="temp"
-            aria-label="Змінити знак">±</button>
-</div>
-<div class="hint">Можна вводити додатні та від'ємні значення</div>
+    <div class="grid" style="margin-top:12px">
+      <div class="field">
+        <label for="cells">Банок (S) <span class="range">1–30</span></label>
+        <div class="stepper">
+          <button type="button" id="sMinus" aria-label="Мінус банок">−</button>
+          <input id="cells" type="text" inputmode="numeric" enterkeyhint="done" value="6">
+          <button type="button" id="sPlus" aria-label="Плюс банок">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="parallel">Паралельно (P) <span class="range">1–30</span></label>
+        <div class="stepper">
+          <button type="button" id="pMinus" aria-label="Мінус паралельно">−</button>
+          <input id="parallel" type="text" inputmode="numeric" enterkeyhint="done" value="1">
+          <button type="button" id="pPlus" aria-label="Плюс паралельно">+</button>
+        </div>
+      </div>
+    </div>
 
-<label for="height">Розрахункова висота (метрів)</label>
-<input id="height" type="text" inputmode="decimal" enterkeyhint="done"
-       value="1400" placeholder="Наприклад: 1400">
+    <div class="field" style="margin-top:12px">
+      <label for="capacity">Ємність однієї комірки <span class="range">1–100 000 мА·год</span></label>
+      <div class="input-unit">
+        <input id="capacity" type="text" inputmode="decimal" enterkeyhint="done" value="1300" placeholder="300 або 5000">
+        <span class="unit">мА·год</span>
+      </div>
+      <div class="total-cap" id="totalCap">—</div>
+    </div>
 
-<label for="gradient">Градієнт температури (°C / 1000 м) <span class="range">0–20</span></label>
-<input id="gradient" type="text" inputmode="decimal" enterkeyhint="done"
-       value="6.5" placeholder="Наприклад: 6.5">
+    <div class="slider-wrap">
+      <label for="usable">Використання ємності <b id="usableVal">80%</b></label>
+      <input type="range" id="usable" min="50" max="100" step="5" value="80">
+      <div class="slider-hint" id="usableHint">Резерв: 20% · 260 мА·год</div>
+    </div>
+  </section>
 
-<div id="error" class="error"></div>
-<div id="warn" class="warn"></div>
+  <section class="panel">
+    <div class="seg blue" id="modeSeg" role="group" aria-label="Спосіб задання витрат">
+      <button type="button" data-m="current" class="on">Струм (A)</button>
+      <button type="button" data-m="power">Потужність (W)</button>
+    </div>
 
-<div class="result">
+    <div class="field" style="margin-top:12px">
+      <label for="value" id="valueLabel">Середній струм у крейсі</label>
+      <div class="input-unit">
+        <input id="value" type="text" inputmode="decimal" enterkeyhint="done" value="15">
+        <span class="unit" id="valueUnit">A</span>
+      </div>
+      <div class="value-equiv" id="valueEquiv"></div>
+    </div>
+  </section>
 
-<div class="result-title">
-ТЕМПЕРАТУРА НА ЗАДАНІЙ ВИСОТІ
-</div>
+  <section class="panel">
+    <div class="result-main">
+      <div class="k">Час польоту</div>
+      <div class="v" id="timeBig">—</div>
+      <div class="sub" id="timeSub"></div>
+    </div>
 
-<div class="temperature" id="output">+10,90 °C</div>
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="k">Енергія</div>
+        <div class="v" id="energyVal">—</div>
+      </div>
+      <div class="info-box">
+        <div class="k">C-rate</div>
+        <div class="v" id="cRateVal">—</div>
+      </div>
+    </div>
 
-<div class="details">
-<div>Зміна температури: <b id="drop">▼ 9,10 °C</b></div>
-<div>Висота: <b id="altitude">1400 м</b></div>
-</div>
+    <div class="voltage-block">
+      <div class="title">Напруга батареї</div>
+      <div class="v-row">
+        <span class="vk">Повна</span>
+        <span class="vv"><b id="vFullVal">—</b> В<span class="vcell" id="vFullCell"></span></span>
+      </div>
+      <div class="v-row">
+        <span class="vk">Номінал</span>
+        <span class="vv"><b id="vNomVal">—</b> В<span class="vcell" id="vNomCell"></span></span>
+      </div>
+      <div class="v-row">
+        <span class="vk">Мінімум</span>
+        <span class="vv"><b id="vMinVal">—</b> В<span class="vcell" id="vMinCell"></span></span>
+      </div>
+    </div>
 
-</div>
+    <div class="max-ref">
+      <span>Максимум (розряд до 0%)</span>
+      <b id="maxTimeVal">—</b>
+    </div>
 
-<div class="formula">
-<b>Формула розрахунку:</b><br><br>
+    <div class="warn" id="warn"></div>
 
-ΔT = (Градієнт × Висота) / 1000<br><br>
+    <div class="reset-row">
+      <button id="reset" type="button" class="reset-btn">↺ Скинути до стандартних</button>
+    </div>
+  </section>
 
-T = T₀ − ΔT<br><br>
-
-Позитивний градієнт — температура знижується.<br>
-Стандартний градієнт у тропосфері — 6,5 °C / 1000 м.
-</div>
-
-<button class="reset" id="reset">↺ Скинути значення</button>
+  <footer>
+    Час = (Ємність × Використання) ÷ Струм &nbsp;·&nbsp; або &nbsp;·&nbsp; Час = (Енергія × Використання) ÷ Потужність<br>
+    <b>LiPo</b> 4.20/3.70/3.30 В · <b>LiHV</b> 4.35/3.80/3.35 В · <b>Li-ion</b> 4.20/3.60/3.00 В на банку.<br>
+    Розрахунок оціночний — реальний час залежить від стилю польоту, температури й стану батареї.
+  </footer>
 
 </div>
 
 <script>
 (function () {
-'use strict';
+  'use strict';
 
-const el = (id) => document.getElementById(id);
+  const el = (id) => document.getElementById(id);
 
-const inputs = {
-    temp: el('temp'),
-    height: el('height'),
-    gradient: el('gradient')
-};
+  const CHEM = {
+    lipo:  { label: 'LiPo',   vFull: 4.20, vNom: 3.70, vMin: 3.30, cMax: 40 },
+    lihv:  { label: 'LiHV',   vFull: 4.35, vNom: 3.80, vMin: 3.35, cMax: 40 },
+    liion: { label: 'Li-ion', vFull: 4.20, vNom: 3.60, vMin: 3.00, cMax: 15 }
+  };
 
-const output = el('output');
-const dropEl = el('drop');
-const altEl = el('altitude');
-const errorEl = el('error');
-const warnEl = el('warn');
+  const STORAGE_KEY = 'batterycalc-v1';
+  const DEFAULTS = {
+    chem: 'lipo', cells: '6', parallel: '1', capacity: '1300',
+    usable: '80', mode: 'current', value: '15'
+  };
 
-const STORAGE_KEY = 'tempcalc-v1';
-const DEFAULTS = { temp: '20', height: '1400', gradient: '6.5' };
+  const PRESETS = {
+    micro: { chem: 'lipo',  cells: '1',  parallel: '1', capacity: '300',   mode: 'current', value: '5'  },
+    fpv:   { chem: 'lipo',  cells: '6',  parallel: '1', capacity: '1300',  mode: 'current', value: '40' },
+    long:  { chem: 'liion', cells: '20', parallel: '5', capacity: '5000',  mode: 'current', value: '20' }
+  };
 
-function filterNumeric(inp, allowNeg) {
+  const LIMITS = {
+    cells:        { min: 1,    max: 30 },
+    parallel:     { min: 1,    max: 30 },
+    capacity:     { min: 1,    max: 100000 },
+    valueCurrent: { min: 0.01, max: 2000 },
+    valuePower:   { min: 0.1,  max: 100000 }
+  };
+
+  const state = { chem: 'lipo', mode: 'current' };
+
+  const F = {
+    cells:    el('cells'),
+    parallel: el('parallel'),
+    capacity: el('capacity'),
+    usable:   el('usable'),
+    value:    el('value')
+  };
+
+  const O = {
+    timeBig:   el('timeBig'),
+    timeSub:   el('timeSub'),
+    energyVal: el('energyVal'),
+    cRateVal:  el('cRateVal'),
+    vFullVal:  el('vFullVal'),
+    vNomVal:   el('vNomVal'),
+    vMinVal:   el('vMinVal'),
+    vFullCell: el('vFullCell'),
+    vNomCell:  el('vNomCell'),
+    vMinCell:  el('vMinCell'),
+    maxTime:   el('maxTimeVal'),
+    usableVal: el('usableVal'),
+    usableHint: el('usableHint'),
+    valueLabel: el('valueLabel'),
+    valueUnit:  el('valueUnit'),
+    valueEquiv: el('valueEquiv'),
+    totalCap:   el('totalCap'),
+    warn:       el('warn')
+  };
+
+  function num(v) {
+    if (v === '' || v == null) return NaN;
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isFinite(n) ? n : NaN;
+  }
+
+  function fmt1(v) { return v.toFixed(1).replace('.', ','); }
+  function fmt2(v) { return v.toFixed(2).replace('.', ','); }
+
+  function fmtInt(v) {
+    return new Intl.NumberFormat('uk-UA').format(Math.round(v));
+  }
+
+  function fmtNum(v) {
+    if (!isFinite(v)) return '—';
+    const abs = Math.abs(v);
+    let s;
+    if (abs >= 10000)      return fmtInt(v);
+    else if (abs >= 100)   s = v.toFixed(0);
+    else if (abs >= 10)    s = v.toFixed(1);
+    else if (abs >= 1)     s = v.toFixed(2);
+    else if (abs >= 0.1)   s = v.toFixed(3);
+    else                   s = v.toFixed(4);
+
+    if (s.includes('.')) {
+      s = s.replace(/\.?0+$/, '');
+      if (s.endsWith('.')) s = s.slice(0, -1);
+    }
+    return s.replace('.', ',');
+  }
+
+  function numToInput(v) {
+    return fmtNum(v);
+  }
+
+  function fmtTime(minutes) {
+    if (!isFinite(minutes) || minutes <= 0) return '—';
+    const totalSec = Math.round(minutes * 60);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    if (m > 0) return m + ':' + String(s).padStart(2, '0');
+    if (totalSec >= 10) return totalSec + ' с';
+    return fmt1(minutes * 60) + ' с';
+  }
+
+  function fmtMinutesSub(minutes) {
+    if (!isFinite(minutes) || minutes <= 0) return '';
+    if (minutes < 0.1) return '= ' + fmt1(minutes * 60) + ' секунд';
+    if (minutes < 1)   return '= ' + fmt1(minutes * 60) + ' секунд';
+    if (minutes < 10)  return '= ' + fmt2(minutes) + ' хв';
+    return '= ' + fmt1(minutes) + ' хв';
+  }
+
+  function filterNumeric(inp, allowDecimal) {
     const v = inp.value;
     if (v === '') return;
-    let s = v.replace(allowNeg ? /[^0-9.,-]/g : /[^0-9.,]/g, '');
-    const sepIdx = s.search(/[.,]/);
-    if (sepIdx !== -1) s = s.slice(0, sepIdx + 1) + s.slice(sepIdx + 1).replace(/[.,]/g, '');
-    if (allowNeg) {
-        if (s.startsWith('-')) s = '-' + s.slice(1).replace(/-/g, '');
-        else s = s.replace(/-/g, '');
+    let s = v.replace(allowDecimal ? /[^0-9.,]/g : /[^0-9]/g, '');
+    if (allowDecimal) {
+      const sepIdx = s.search(/[.,]/);
+      if (sepIdx !== -1) {
+        s = s.slice(0, sepIdx + 1) + s.slice(sepIdx + 1).replace(/[.,]/g, '');
+      }
     }
     if (s !== v) inp.value = s;
-}
+  }
 
-function clampField(inp, min, max) {
+  function clampField(inp, min, max) {
     const v = inp.value;
-    if (v === '' || v === '-' || v === '.' || v === ',' || v === '-.' || v === '-,') return;
-    const n = parseFloat(v.replace(',', '.'));
+    if (v === '' || v === '.' || v === ',') return;
+    const n = num(v);
     if (!isFinite(n)) return;
     if (n > max) inp.value = String(max);
     else if (n < min) inp.value = String(min);
-}
+  }
 
-function attachValidation(inp, min, max, allowNeg) {
+  function attachValidation(inp, min, max, allowDecimal) {
     inp.addEventListener('input', () => {
-        filterNumeric(inp, allowNeg);
-        clampField(inp, min, max);
+      filterNumeric(inp, allowDecimal);
+      clampField(inp, min, max);
     });
-}
+  }
 
-function numValue(inp) {
-    if (!inp.value) return NaN;
-    const v = parseFloat(inp.value.replace(',', '.'));
-    return isFinite(v) ? v : NaN;
-}
-
-function fmt(v) {
-    return new Intl.NumberFormat('uk-UA', {
-        minimumFractionDigits: 2, maximumFractionDigits: 2
-    }).format(v);
-}
-function fmtTemp(v) { return (v > 0 ? '+' : '') + fmt(v); }
-function fmtHeight(h) {
-    if (h >= 1000) {
-        const km = h / 1000;
-        const kmStr = (km % 1 === 0 ? km.toFixed(0) : km.toFixed(1)).replace('.', ',');
-        return h + ' м (' + kmStr + ' км)';
-    }
-    return h + ' м';
-}
-
-function saveState() {
+  function saveState() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            temp: inputs.temp.value, height: inputs.height.value, gradient: inputs.gradient.value
-        }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        chem: state.chem, mode: state.mode,
+        cells: F.cells.value, parallel: F.parallel.value,
+        capacity: F.capacity.value,
+        usable: F.usable.value, value: F.value.value
+      }));
     } catch (e) {}
-}
-function loadState() {
+  }
+
+  function loadState() {
     try {
-        const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-        if (!s) return;
-        if (s.temp != null) inputs.temp.value = s.temp;
-        if (s.height != null) inputs.height.value = s.height;
-        if (s.gradient != null) inputs.gradient.value = s.gradient;
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (!s) return;
+      if (s.chem === 'lipo' || s.chem === 'lihv' || s.chem === 'liion') state.chem = s.chem;
+      if (s.mode === 'current' || s.mode === 'power') state.mode = s.mode;
+      if (s.cells    != null) F.cells.value    = s.cells;
+      if (s.parallel != null) F.parallel.value = s.parallel;
+      if (s.capacity != null) F.capacity.value = s.capacity;
+      if (s.usable   != null) F.usable.value   = s.usable;
+      if (s.value    != null) F.value.value    = s.value;
     } catch (e) {}
-}
+  }
 
-function calc() {
-    const t = numValue(inputs.temp);
-    const h = numValue(inputs.height);
-    const g = numValue(inputs.gradient);
+  function syncSegs() {
+    document.querySelectorAll('#chemSeg button').forEach((b) =>
+      b.classList.toggle('on', b.dataset.c === state.chem));
+    document.querySelectorAll('#modeSeg button').forEach((b) =>
+      b.classList.toggle('on', b.dataset.m === state.mode));
 
-    if (!isFinite(t) || !isFinite(h) || !isFinite(g) || h < 0) {
-        errorEl.textContent = 'Перевір правильність введених даних.';
-        output.textContent = '---';
-        dropEl.textContent = '---';
-        altEl.textContent = '---';
-        warnEl.classList.remove('show');
-        return;
+    const isCurrent = state.mode === 'current';
+    O.valueLabel.textContent = isCurrent
+      ? 'Середній струм у крейсі'
+      : 'Середня потужність у крейсі';
+    O.valueUnit.textContent = isCurrent ? 'A' : 'W';
+  }
+
+  function currentVnom() {
+    const chem = CHEM[state.chem];
+    const cells = num(F.cells.value);
+    if (!isFinite(cells) || cells <= 0) return NaN;
+    return cells * chem.vNom;
+  }
+
+  function updateTotalCapUI() {
+    const cells = num(F.cells.value) || 1;
+    const par = num(F.parallel.value) || 1;
+    const cap = num(F.capacity.value) || 0;
+    const total = par * cap;
+    O.totalCap.innerHTML = '= ' + cells + 'S' + par + 'P × ' + fmtNum(cap) +
+                           ' = <b>' + fmtNum(total) + ' мА·год</b>';
+  }
+
+  function updateUsableUI() {
+    const pct = Math.round(num(F.usable.value) || 80);
+    O.usableVal.textContent = pct + '%';
+    const par = num(F.parallel.value) || 0;
+    const cap = num(F.capacity.value) || 0;
+    const total = par * cap;
+    const reserve = Math.max(0, total * (100 - pct) / 100);
+    O.usableHint.textContent = 'Резерв: ' + (100 - pct) + '% · ' + fmtNum(reserve) + ' мА·год';
+  }
+
+  function updateValueEquiv() {
+    const vNom = currentVnom();
+    const value = num(F.value.value);
+    if (!isFinite(vNom) || vNom <= 0 || !isFinite(value) || value <= 0) {
+      O.valueEquiv.textContent = '';
+      return;
     }
-    errorEl.textContent = '';
-
-    const delta = (g * h) / 1000;
-    const result = t - delta;
-    output.textContent = fmtTemp(result) + ' °C';
-
-    const absDelta = Math.abs(delta);
-    if (absDelta < 0.005) dropEl.textContent = '— без змін';
-    else if (delta > 0) dropEl.textContent = '▼ ' + fmt(delta) + ' °C (зниження)';
-    else dropEl.textContent = '▲ ' + fmt(absDelta) + ' °C (підвищення)';
-
-    altEl.textContent = fmtHeight(h);
-
-    if (h > 11000) {
-        warnEl.textContent = 'Висота понад 11 км: лінійна модель незастосовна — у стратосфері температурний профіль інший.';
-        warnEl.classList.add('show');
+    if (state.mode === 'current') {
+      const w = value * vNom;
+      O.valueEquiv.textContent = '≈ ' + fmtNum(w) + ' Вт @ ' + fmtNum(vNom) + ' В (номінал)';
     } else {
-        warnEl.classList.remove('show');
+      const a = value / vNom;
+      O.valueEquiv.textContent = '≈ ' + fmtNum(a) + ' А @ ' + fmtNum(vNom) + ' В (номінал)';
     }
-}
+  }
 
-function update() { try { calc(); } finally { saveState(); } }
+  function calc() {
+    const chem = CHEM[state.chem];
+    const cells = num(F.cells.value);
+    const par = num(F.parallel.value);
+    const capPerCell = num(F.capacity.value);
+    const usablePct = num(F.usable.value);
+    const value = num(F.value.value);
+    const mode = state.mode;
 
-function toggleSign(inp) {
-    let v = inp.value.trim();
-    if (v === '' || v === '-') inp.value = '-';
-    else if (v.startsWith('-')) inp.value = v.slice(1);
-    else if (v.startsWith('+')) inp.value = v.slice(1);
-    else inp.value = '-' + v;
-    inp.dispatchEvent(new Event('input', { bubbles: true }));
-    try { inp.focus(); } catch (e) {}
-}
+    if (!isFinite(cells) || cells < 1 || !isFinite(par) || par < 1 ||
+        !isFinite(capPerCell) || capPerCell <= 0 ||
+        !isFinite(usablePct) || !isFinite(value) || value <= 0) {
+      O.timeBig.textContent = '—';
+      O.timeSub.textContent = '';
+      O.energyVal.innerHTML = '—';
+      O.cRateVal.innerHTML = '—';
+      O.maxTime.textContent = '—';
+      setWarnings([]);
+      return;
+    }
 
-document.querySelectorAll('.sign-btn').forEach((btn) => {
-    btn.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        const target = inputs[btn.dataset.target];
-        if (target) toggleSign(target);
+    const capacity = par * capPerCell;
+    const vFull = cells * chem.vFull;
+    const vNom  = cells * chem.vNom;
+    const vMin  = cells * chem.vMin;
+
+    O.vFullVal.textContent = fmt1(vFull);
+    O.vNomVal.textContent  = fmt1(vNom);
+    O.vMinVal.textContent  = fmt1(vMin);
+    O.vFullCell.textContent = fmt2(chem.vFull) + ' В × ' + cells;
+    O.vNomCell.textContent  = fmt2(chem.vNom)  + ' В × ' + cells;
+    O.vMinCell.textContent  = fmt2(chem.vMin)  + ' В × ' + cells;
+
+    const capAh = capacity / 1000;
+    const energyWh = capAh * vNom;
+    O.energyVal.innerHTML = fmtNum(energyWh) + '<small>Вт·год</small>';
+
+    const usableFrac = usablePct / 100;
+    const usableAh = capAh * usableFrac;
+    const usableWh = energyWh * usableFrac;
+
+    let avgCurrent, minutes, minutesMax;
+
+    if (mode === 'current') {
+      avgCurrent = value;
+      minutes    = (usableAh / value) * 60;
+      minutesMax = (capAh / value) * 60;
+    } else {
+      avgCurrent = value / vNom;
+      minutes    = (usableWh / value) * 60;
+      minutesMax = (energyWh / value) * 60;
+    }
+
+    O.timeBig.textContent = fmtTime(minutes);
+    O.timeSub.textContent = fmtMinutesSub(minutes);
+    O.maxTime.textContent = fmtTime(minutesMax);
+
+    const cRate = capAh > 0 ? avgCurrent / capAh : NaN;
+    let cClass = 'crate-ok';
+    if (isFinite(cRate)) {
+      if (cRate >= chem.cMax)            cClass = 'crate-danger';
+      else if (cRate >= chem.cMax * 0.8) cClass = 'crate-high';
+      else if (cRate >= chem.cMax * 0.4) cClass = 'crate-normal';
+    }
+    O.cRateVal.innerHTML = isFinite(cRate)
+      ? '<span class="' + cClass + '">' + fmtNum(cRate) + '</span><small>C</small>'
+      : '—';
+
+    const warnings = [];
+
+    if (isFinite(cRate) && cRate >= chem.cMax) {
+      warnings.push({ level: 'red',
+        msg: 'C-rate ' + fmtNum(cRate) + 'C перевищує безпечний максимум для ' + chem.label +
+             ' (~' + chem.cMax + 'C). Високий знос, перегрів, ризик відсічки.' });
+    } else if (isFinite(cRate) && cRate >= chem.cMax * 0.8) {
+      warnings.push({ level: 'amber',
+        msg: 'C-rate ' + fmtNum(cRate) + 'C високий — слідкуйте за температурою акумулятора.' });
+    }
+
+    if (usablePct > 85) {
+      warnings.push({ level: 'amber',
+        msg: 'Використання ' + Math.round(usablePct) + '% — агресивно. Типово безпечно не більше 80%.' });
+    }
+
+    if (vFull > 100) {
+      warnings.push({ level: 'red',
+        msg: 'Повна напруга ' + fmt1(vFull) + ' В — смертельно небезпечна (DC > 100 В). ' +
+             'Потрібна ізоляція, запобіжники, досвід із HV-системами.' });
+    } else if (vFull > 50) {
+      warnings.push({ level: 'red',
+        msg: 'Повна напруга ' + fmt1(vFull) + ' В перевищує 50 В DC — небезпечно для життя. ' +
+             'Захист від випадкового дотику обов\'язковий.' });
+    }
+
+    if (cells > 18) {
+      warnings.push({ level: 'red',
+        msg: cells + 'S — дуже високовольтна система. Потрібен HV ESC (перевірте специфікацію), ' +
+             'BMS на ' + cells + 'S (часто два послідовно), окремий зарядний пристрій.' });
+    } else if (cells > 14) {
+      warnings.push({ level: 'amber',
+        msg: 'Понад 14 банок — перевірте, чи ESC і мотори розраховані на ' +
+             fmt1(vFull) + ' В (повна).' });
+    }
+
+    if (minutes < 0.5) {
+      warnings.push({ level: 'red',
+        msg: 'Час польоту менше 30 секунд — перевірте дані. Можливо, струм/потужність завищені або ємність замала.' });
+    }
+
+    setWarnings(warnings);
+  }
+
+  function setWarnings(list) {
+    if (!list.length) {
+      O.warn.classList.remove('show');
+      O.warn.innerHTML = '';
+      return;
+    }
+    const hasRed = list.some((w) => w.level === 'red');
+    O.warn.className = 'warn show' + (hasRed ? '' : ' amber');
+    O.warn.innerHTML = list.map((w) =>
+      '<div class="warn-item">' + w.msg + '</div>'
+    ).join('');
+  }
+
+  function update() {
+    try { calc(); } finally {
+      saveState();
+      updateUsableUI();
+      updateTotalCapUI();
+      updateValueEquiv();
+    }
+  }
+
+  document.querySelectorAll('#chemSeg button').forEach((b) => {
+    b.addEventListener('click', () => {
+      state.chem = b.dataset.c;
+      syncSegs();
+      update();
     });
-});
+  });
 
-el('reset').addEventListener('click', () => {
-    inputs.temp.value = DEFAULTS.temp;
-    inputs.height.value = DEFAULTS.height;
-    inputs.gradient.value = DEFAULTS.gradient;
+  document.querySelectorAll('#modeSeg button').forEach((b) => {
+    b.addEventListener('click', () => {
+      const newMode = b.dataset.m;
+      if (newMode === state.mode) return;
+
+      const vNom = currentVnom();
+      const value = num(F.value.value);
+
+      if (isFinite(vNom) && vNom > 0 && isFinite(value) && value > 0) {
+        if (state.mode === 'current' && newMode === 'power') {
+          const w = value * vNom;
+          const l = LIMITS.valuePower;
+          F.value.value = numToInput(Math.min(l.max, Math.max(l.min, w)));
+        } else if (state.mode === 'power' && newMode === 'current') {
+          const a = value / vNom;
+          const l = LIMITS.valueCurrent;
+          F.value.value = numToInput(Math.min(l.max, Math.max(l.min, a)));
+        }
+      }
+
+      state.mode = newMode;
+      syncSegs();
+      update();
+    });
+  });
+
+  document.querySelectorAll('#presets button').forEach((b) => {
+    b.addEventListener('click', () => {
+      const p = PRESETS[b.dataset.preset];
+      if (!p) return;
+      state.chem = p.chem;
+      state.mode = p.mode;
+      F.cells.value    = p.cells;
+      F.parallel.value = p.parallel;
+      F.capacity.value = p.capacity;
+      F.value.value    = p.value;
+      syncSegs();
+      update();
+    });
+  });
+
+  function stepCells(delta) {
+    let n = Math.round(num(F.cells.value) || 1);
+    n = Math.max(LIMITS.cells.min, Math.min(LIMITS.cells.max, n + delta));
+    F.cells.value = String(n);
+    update();
+  }
+  function stepParallel(delta) {
+    let n = Math.round(num(F.parallel.value) || 1);
+    n = Math.max(LIMITS.parallel.min, Math.min(LIMITS.parallel.max, n + delta));
+    F.parallel.value = String(n);
+    update();
+  }
+  el('sMinus').addEventListener('click', () => stepCells(-1));
+  el('sPlus').addEventListener('click',  () => stepCells(+1));
+  el('pMinus').addEventListener('click', () => stepParallel(-1));
+  el('pPlus').addEventListener('click',  () => stepParallel(+1));
+
+  el('reset').addEventListener('click', () => {
+    state.chem = DEFAULTS.chem;
+    state.mode = DEFAULTS.mode;
+    F.cells.value    = DEFAULTS.cells;
+    F.parallel.value = DEFAULTS.parallel;
+    F.capacity.value = DEFAULTS.capacity;
+    F.usable.value   = DEFAULTS.usable;
+    F.value.value    = DEFAULTS.value;
+    syncSegs();
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     update();
-});
+  });
 
-loadState();
+  loadState();
+  syncSegs();
 
-attachValidation(inputs.temp,     -100,  100,  true);
-attachValidation(inputs.height,      0, 20000, false);
-attachValidation(inputs.gradient,    0,   20,  false);
+  attachValidation(F.cells,    LIMITS.cells.min,    LIMITS.cells.max,    false);
+  attachValidation(F.parallel, LIMITS.parallel.min, LIMITS.parallel.max, false);
+  attachValidation(F.capacity, LIMITS.capacity.min, LIMITS.capacity.max, true);
 
-Object.values(inputs).forEach((inp) => {
+  F.value.addEventListener('input', () => {
+    filterNumeric(F.value, true);
+    const l = state.mode === 'current' ? LIMITS.valueCurrent : LIMITS.valuePower;
+    clampField(F.value, l.min, l.max);
+  });
+
+  F.usable.addEventListener('input', update);
+
+  Object.values(F).forEach((inp) => {
     inp.addEventListener('input', update);
     inp.addEventListener('change', update);
-});
+  });
 
-update();
+  update();
 })();
 </script>
 
